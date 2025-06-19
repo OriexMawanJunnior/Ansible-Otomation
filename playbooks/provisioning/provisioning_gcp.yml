@@ -1,0 +1,43 @@
+# playbooks/provisioning/provision_gcp.yml
+- name: Provision VM Instance on GCP
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    gcp_project: "<NAMA_PROJECT_GCP_ANDA>" # Ganti dengan ID Project GCP Anda
+    gcp_zone: "asia-southeast1-a"
+    machine_type: "e2-micro"
+    image_family: "ubuntu-2204-lts"
+    image_project: "ubuntu-os-cloud"
+    project_label: "iac-thesis"
+
+  tasks:
+    - name: Launch GCP instance
+      google.cloud.gcp_compute_instance:
+        name: "ansible-gcp-vm"
+        project: "{{ gcp_project }}"
+        zone: "{{ gcp_zone }}"
+        machine_type: "{{ machine_type }}"
+        disks:
+          - auto_delete: true
+            boot: true
+            initialize_params:
+              source_image: "projects/{{ image_project }}/global/images/family/{{ image_family }}"
+        network_interfaces:
+          - network: null # Menggunakan jaringan default
+            access_configs:
+              - name: 'External NAT'
+                type: 'ONE_TO_ONE_NAT'
+        labels:
+          project: "{{ project_label }}"
+        tags:
+          items:
+            - http-server # Tag ini biasanya terasosiasi dengan firewall rule default
+            - ssh
+        status: RUNNING
+      register: gcp_result
+
+    - name: Print public IP address
+      ansible.builtin.debug:
+        msg: "Instance created with Public IP: {{ gcp_result.networkInterfaces[0].accessConfigs[0].natIP }}"

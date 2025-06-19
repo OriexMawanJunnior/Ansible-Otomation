@@ -1,0 +1,5 @@
+# roles/web_server/handlers/main.yml
+- name: restart nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted

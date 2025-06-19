@@ -1,0 +1,17 @@
+# Mengambil inventory dari Google Cloud Platform
+
+plugin: google.cloud.gcp_compute
+projects:
+  - <NAMA_PROJECT_GCP_ANDA> # Ganti dengan ID Project GCP Anda
+zones:
+  - asia-southeast1-a # Sesuaikan dengan zona Anda
+keyed_groups:
+  # Membuat grup berdasarkan nilai dari label 'project'
+  - key: labels.project
+    prefix: label_project_
+filters:
+  # Hanya mengambil instance yang sedang berjalan
+  - status = RUNNING
+compose:
+  # Mengatur variabel ansible_host dengan alamat IP publik (natIP)
+  ansible_host: networkInterfaces[0].accessConfigs[0].natIP
