@@ -21,11 +21,11 @@
           - proto: tcp
             ports: [22]
             cidr_ip: 0.0.0.0/0
-            description: "Allow SSH"
+            rule_desc: "Allow SSH"
           - proto: tcp
             ports: [80]
             cidr_ip: 0.0.0.0/0
-            description: "Allow HTTP"
+            rule_desc: "Allow HTTP"
       register: sg_result
 
     - name: Launch EC2 instance
