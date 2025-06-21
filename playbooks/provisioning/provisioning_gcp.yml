@@ -5,7 +5,7 @@
   gather_facts: no
 
   vars:
-    gcp_project: "<NAMA_PROJECT_GCP_ANDA>" # Ganti dengan ID Project GCP Anda
+    gcp_project: "eminent-kit-463510-a3" # Ganti dengan ID Project GCP Anda
     gcp_zone: "asia-southeast1-a"
     machine_type: "e2-micro"
     image_family: "ubuntu-2204-lts"
