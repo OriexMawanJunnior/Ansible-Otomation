@@ -1,6 +1,7 @@
 # Mengambil inventory dari Google Cloud Platform
 
 plugin: google.cloud.gcp_compute
+auth_kind: gcloud
 projects:
   - eminent-kit-463510-a3 # Ganti dengan ID Project GCP Anda
 zones:
