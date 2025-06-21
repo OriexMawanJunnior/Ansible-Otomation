@@ -35,7 +35,7 @@
         image_id: "{{ ami_id }}"
         region: "{{ region }}"
         security_group: "web-sg-{{ project_tag }}"
-        instance_tags:
+        tags:
           Name: "ansible-aws-vm"
           Project: "{{ project_tag }}"
         wait: yes
