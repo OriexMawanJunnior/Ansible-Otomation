@@ -2,7 +2,7 @@
 
 plugin: google.cloud.gcp_compute
 projects:
-  - <NAMA_PROJECT_GCP_ANDA> # Ganti dengan ID Project GCP Anda
+  - eminent-kit-463510-a3 # Ganti dengan ID Project GCP Anda
 zones:
   - asia-southeast1-a # Sesuaikan dengan zona Anda
 keyed_groups:
