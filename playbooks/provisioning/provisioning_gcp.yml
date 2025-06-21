@@ -19,6 +19,7 @@
         project: "{{ gcp_project }}"
         zone: "{{ gcp_zone }}"
         machine_type: "{{ machine_type }}"
+        auth_kind: application
         disks:
           - auto_delete: true
             boot: true
