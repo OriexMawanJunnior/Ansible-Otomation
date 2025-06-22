@@ -45,12 +45,13 @@
         project: "{{ gcp_project }}"
         auth_kind: application
         allowed:
-          - IPProtocol: tcp
-            ports: ['80']
+          - IPProtocol: "tcp"  # Pastikan 'P' besar dan 'tcp' dalam tanda kutip
+            ports:
+              - "80"
         source_ranges:
-          - 0.0.0.0/0
+          - "0.0.0.0/0"
         target_tags:
-          - http-server
+          - "http-server"
         state: present
 
     - name: Print public IP address
