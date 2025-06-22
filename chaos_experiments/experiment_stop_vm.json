@@ -11,7 +11,7 @@
                 "func": "stop_instances",
                 "arguments": {
                     "instance_ids": [
-                        "i-0df22b20422dbf9e8"
+                        "i-05d60cc7eea6d6cca"
                     ]
                 }
             }

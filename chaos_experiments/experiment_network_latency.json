@@ -10,7 +10,7 @@
                 "tolerance": 200,
                 "provider": {
                     "type": "http",
-                    "url": "http://54.254.31.158"
+                    "url": "http://52.221.214.225"
                 }
             }
         ]
@@ -22,7 +22,7 @@
             "provider": {
                 "type": "process",
                 "path": "ssh",
-                "args": "ssh -t ubuntu@54.254.31.158 sudo tc qdisc add dev eth0 root netem delay 200ms"
+                "args": "ssh -t ubuntu@52.221.214.225 sudo tc qdisc add dev eth0 root netem delay 200ms"
             }
         }
     ],
@@ -33,7 +33,7 @@
             "provider": {
                 "type": "process",
                 "path": "ssh",
-                "args": "ssh -t ubuntu@54.254.31.158 sudo tc qdisc del dev eth0 root"
+                "args": "ssh -t ubuntu@52.221.214.225 sudo tc qdisc del dev eth0 root"
             }
         }
     ]
