@@ -39,6 +39,20 @@
         status: RUNNING
       register: gcp_result
 
+    - name: Create firewall rule to allow HTTP traffic
+          google.cloud.gcp_compute_firewall:
+            name: "allow-http-internet"
+            project: "{{ gcp_project }}"
+            auth_kind: application
+            allowed:
+              - IP_protocol: tcp
+                ports: ['80']
+            source_ranges:
+              - 0.0.0.0/0
+            target_tags:
+              - http-server
+            state: present
+            
     - name: Print public IP address
       ansible.builtin.debug:
         msg: "Instance created with Public IP: {{ gcp_result.networkInterfaces[0].accessConfigs[0].natIP }}"
