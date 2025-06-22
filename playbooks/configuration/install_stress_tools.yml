@@ -1,0 +1,10 @@
+- name: Install Stress Test Tools on All Hosts
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install stress-ng package
+      ansible.builtin.apt:
+        name: stress-ng
+        state: present
+        update_cache: yes

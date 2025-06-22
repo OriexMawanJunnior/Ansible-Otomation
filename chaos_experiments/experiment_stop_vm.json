@@ -1,0 +1,52 @@
+{
+    "title": "Uji Ketahanan Terhadap Kegagalan VM",
+    "description": "Mematikan instance EC2 untuk melihat dampak pada sistem.",
+    "steady_state_hypothesis": {
+        "title": "Layanan AWS harus dapat diakses",
+        "probes": [
+            {
+                "type": "probe",
+                "name": "check-aws-service-is-up",
+                "tolerance": 200,
+                "provider": {
+                    "type": "http",
+                    "url": "http://<IP_PUBLIK_VM_AWS_ANDA>"
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "stop-ec2-instance",
+            "provider": {
+                "type": "python",
+                "module": "chaosaws.ec2.actions",
+                "func": "stop_instances",
+                "arguments": {
+                    "instance_ids": [
+                        "<ID_INSTANCE_AWS_ANDA>"
+                    ],
+                    "region": "ap-southeast-1"
+                }
+            }
+        }
+    ],
+    "rollbacks": [
+        {
+            "type": "action",
+            "name": "restart-ec2-instance",
+            "provider": {
+                "type": "python",
+                "module": "chaosaws.ec2.actions",
+                "func": "start_instances",
+                "arguments": {
+                    "instance_ids": [
+                        "<ID_INSTANCE_AWS_ANDA>"
+                    ],
+                    "region": "ap-southeast-1"
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "title": "Uji Ketahanan Terhadap Latensi Jaringan",
+    "description": "Menambahkan delay 200ms pada trafik jaringan VM AWS selama 60 detik.",
+    "steady_state_hypothesis": {
+        "title": "Layanan AWS harus tetap dapat diakses",
+        "probes": [
+            {
+                "type": "probe",
+                "name": "check-aws-service-is-still-accessible",
+                "tolerance": 200,
+                "provider": {
+                    "type": "http",
+                    "url": "http://<IP_PUBLIK_VM_AWS_ANDA>"
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "add-network-latency-on-aws-vm",
+            "provider": {
+                "type": "process",
+                "path": "ssh",
+                "args": "ubuntu@<IP_PUBLIK_VM_AWS_ANDA> sudo tc qdisc add dev eth0 root netem delay 200ms"
+            }
+        }
+    ],
+    "rollbacks": [
+        {
+            "type": "action",
+            "name": "remove-network-latency",
+            "provider": {
+                "type": "process",
+                "path": "ssh",
+                "args": "ubuntu@<IP_PUBLIK_VM_AWS_ANDA> sudo tc qdisc del dev eth0 root"
+            }
+        }
+    ]
+}
