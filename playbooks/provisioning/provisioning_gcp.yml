@@ -43,15 +43,13 @@
         name: "allow-http-internet"
         project: "{{ gcp_project }}"
         auth_kind: application
-        allowed:
-          - IPProtocol: 'tcp'  
-            ports: [ '80' ]     
+        allowed: # <-- PERBAIKAN DI SINI
+          - 'tcp:80'
         source_ranges:
           - "0.0.0.0/0"
         target_tags:
           - "http-server"
         state: present
-      register: firewall_result
 
     - name: Print public IP address
       ansible.builtin.debug:
