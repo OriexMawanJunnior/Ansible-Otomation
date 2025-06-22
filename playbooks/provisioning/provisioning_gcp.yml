@@ -1,11 +1,10 @@
-# playbooks/provisioning/provision_gcp.yml
 - name: Provision VM Instance on GCP
   hosts: localhost
   connection: local
   gather_facts: no
 
   vars:
-    gcp_project: "eminent-kit-463510-a3" # Ganti dengan ID Project GCP Anda
+    gcp_project: "eminent-kit-463510-a3"
     gcp_zone: "asia-southeast1-a"
     machine_type: "e2-micro"
     image_family: "ubuntu-2204-lts"
@@ -26,7 +25,7 @@
             initialize_params:
               source_image: "projects/{{ image_project }}/global/images/family/{{ image_family }}"
         network_interfaces:
-          - network: null # Menggunakan jaringan default
+          - network: null
             access_configs:
               - name: 'External NAT'
                 type: 'ONE_TO_ONE_NAT'
@@ -34,7 +33,7 @@
           project: "{{ project_label }}"
         tags:
           items:
-            - http-server # Tag ini biasanya terasosiasi dengan firewall rule default
+            - http-server
             - ssh
         status: RUNNING
       register: gcp_result
@@ -45,14 +44,14 @@
         project: "{{ gcp_project }}"
         auth_kind: application
         allowed:
-          - IPProtocol: "tcp"  # Pastikan 'P' besar dan 'tcp' dalam tanda kutip
-            ports:
-              - "80"
+          - IPProtocol: 'tcp'  
+            ports: [ '80' ]     
         source_ranges:
           - "0.0.0.0/0"
         target_tags:
           - "http-server"
         state: present
+      register: firewall_result
 
     - name: Print public IP address
       ansible.builtin.debug:
