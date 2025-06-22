@@ -10,7 +10,7 @@
                 "tolerance": 200,
                 "provider": {
                     "type": "http",
-                    "url": "http://<IP_PUBLIK_VM_AWS_ANDA>"
+                    "url": "http://52.221.180.194"
                 }
             }
         ]
@@ -25,7 +25,7 @@
                 "func": "stop_instances",
                 "arguments": {
                     "instance_ids": [
-                        "<ID_INSTANCE_AWS_ANDA>"
+                        "i-0df22b20422dbf9e8"
                     ],
                     "region": "ap-southeast-1"
                 }
@@ -42,7 +42,7 @@
                 "func": "start_instances",
                 "arguments": {
                     "instance_ids": [
-                        "<ID_INSTANCE_AWS_ANDA>"
+                        "i-0df22b20422dbf9e8"
                     ],
                     "region": "ap-southeast-1"
                 }

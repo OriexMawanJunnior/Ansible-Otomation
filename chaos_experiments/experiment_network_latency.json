@@ -10,7 +10,7 @@
                 "tolerance": 200,
                 "provider": {
                     "type": "http",
-                    "url": "http://<IP_PUBLIK_VM_AWS_ANDA>"
+                    "url": "http://52.221.180.194"
                 }
             }
         ]
@@ -22,7 +22,7 @@
             "provider": {
                 "type": "process",
                 "path": "ssh",
-                "args": "ubuntu@<IP_PUBLIK_VM_AWS_ANDA> sudo tc qdisc add dev eth0 root netem delay 200ms"
+                "args": "ubuntu@52.221.180.194 sudo tc qdisc add dev eth0 root netem delay 200ms"
             }
         }
     ],
@@ -33,7 +33,7 @@
             "provider": {
                 "type": "process",
                 "path": "ssh",
-                "args": "ubuntu@<IP_PUBLIK_VM_AWS_ANDA> sudo tc qdisc del dev eth0 root"
+                "args": "ubuntu@52.221.180.194 sudo tc qdisc del dev eth0 root"
             }
         }
     ]

@@ -10,7 +10,7 @@
                 "tolerance": 200,
                 "provider": {
                     "type": "http",
-                    "url": "http://<IP_PUBLIK_VM_GCP_ANDA>"
+                    "url": "http://34.126.94.47"
                 }
             }
         ]
@@ -22,7 +22,7 @@
             "provider": {
                 "type": "process",
                 "path": "ssh",
-                "args": "root@<IP_PUBLIK_VM_GCP_ANDA> stress-ng --cpu 1 --cpu-load 100 --timeout 60s"
+                "args": "root@34.126.94.47 stress-ng --cpu 1 --cpu-load 100 --timeout 60s"
             }
         }
     ]
