@@ -7,7 +7,7 @@
   vars:
     region: "ap-southeast-1"
     key_name: "ansible-key" # Nama Key Pair yang sudah diimpor ke AWS
-    instance_type: "t2.micro"
+    instance_type: "t3.micro"
     ami_id: "ami-0b8607d2721c94a77" # AMI untuk Ubuntu 22.04 di ap-southeast-1 (cek AMI terbaru)
     project_tag: "iac-thesis"
 
