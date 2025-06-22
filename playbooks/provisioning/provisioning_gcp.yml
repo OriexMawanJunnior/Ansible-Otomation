@@ -43,8 +43,10 @@
         name: "allow-http-internet"
         project: "{{ gcp_project }}"
         auth_kind: application
-        allowed: # <-- PERBAIKAN DI SINI
-          - 'tcp:80'
+        allowed:
+          - IPProtocol: tcp
+            ports:
+              - '80'
         source_ranges:
           - "0.0.0.0/0"
         target_tags:
