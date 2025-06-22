@@ -45,7 +45,7 @@
         project: "{{ gcp_project }}"
         auth_kind: application
         allowed:
-          - IP_protocol: tcp
+          - IPProtocol: tcp
             ports: ['80']
         source_ranges:
           - 0.0.0.0/0
