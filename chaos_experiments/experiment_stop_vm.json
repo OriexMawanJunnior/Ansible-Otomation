@@ -1,53 +1,50 @@
 {
-  "version": "1.0.0",
-  "title": "Uji Ketahanan Terhadap Kegagalan VM",
-  "description": "Mematikan instance EC2 untuk melihat dampak pada sistem.",
-  "steady_state_hypothesis": {
-    "title": "Layanan AWS harus dapat diakses",
-    "probes": [
-      {
-        "type": "probe",
-        "name": "check-aws-service-is-up",
-        "tolerance": 200,
-        "provider": {
-          "type": "http",
-          "url": "http://52.221.180.194",
-          "timeout": 5,
-          "verify_tls": false
+    "title": "Uji Ketahanan Terhadap Kegagalan VM",
+    "description": "Mematikan instance EC2 untuk melihat dampak pada sistem.",
+    "steady_state_hypothesis": {
+        "title": "Layanan AWS harus dapat diakses",
+        "probes": [
+            {
+                "type": "probe",
+                "name": "check-aws-service-is-up",
+                "tolerance": 200,
+                "provider": {
+                    "type": "http",
+                    "url": "http://52.221.180.194"
+                }
+            }
+        ]
+    },
+    "method": [
+        {
+            "type": "action",
+            "name": "stop-ec2-instance",
+            "provider": {
+                "type": "python",
+                "module": "chaosaws.ec2.actions",
+                "func": "stop_instances",
+                "arguments": {
+                    "instance_ids": [
+                        "i-0df22b20422dbf9e8"
+                    ]
+                }
+            }
         }
-      }
+    ],
+    "rollbacks": [
+        {
+            "type": "action",
+            "name": "restart-ec2-instance",
+            "provider": {
+                "type": "python",
+                "module": "chaosaws.ec2.actions",
+                "func": "start_instances",
+                "arguments": {
+                    "instance_ids": [
+                        "i-0df22b20422dbf9e8"
+                    ]
+                }
+            }
+        }
     ]
-  },
-  "method": [
-    {
-      "type": "action",
-      "name": "stop-ec2-instance",
-      "provider": {
-        "type": "python",
-        "module": "chaosaws.ec2.actions",
-        "func": "stop_instances",
-        "arguments": {
-          "instance_ids": [
-            "i-0df22b20422dbf9e8"
-          ],
-        }
-      }
-    }
-  ],
-  "rollbacks": [
-    {
-      "type": "action",
-      "name": "restart-ec2-instance",
-      "provider": {
-        "type": "python",
-        "module": "chaosaws.ec2.actions",
-        "func": "start_instances",
-        "arguments": {
-          "instance_ids": [
-            "i-0df22b20422dbf9e8"
-          ],
-        }
-      }
-    }
-  ]
 }
