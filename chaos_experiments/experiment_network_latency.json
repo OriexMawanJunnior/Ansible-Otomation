@@ -1,39 +1,25 @@
 {
-    "title": "Uji Ketahanan Terhadap Latensi Jaringan",
-    "description": "Menambahkan delay 200ms pada trafik jaringan VM AWS selama 60 detik.",
-    "steady_state_hypothesis": {
-        "title": "Layanan AWS harus tetap dapat diakses",
-        "probes": [
-            {
-                "type": "probe",
-                "name": "check-aws-service-is-still-accessible",
-                "tolerance": 200,
-                "provider": {
-                    "type": "http",
-                    "url": "http://52.221.214.225"
-                }
-            }
-        ]
-    },
+    "title": "Uji Ketahanan Terhadap Latensi Jaringan di AWS",
+    "description": "Menambahkan delay 300ms pada trafik jaringan VM AWS menggunakan Ansible.",
     "method": [
         {
             "type": "action",
-            "name": "add-network-latency-on-aws-vm",
+            "name": "add-network-latency-via-ansible",
             "provider": {
                 "type": "process",
-                "path": "ssh",
-                "args": "ssh -t ubuntu@52.221.214.225 sudo tc qdisc add dev eth0 root netem delay 200ms"
+                "path": "ansible-playbook",
+                "args": "-i inventory/ playbooks/chaos/manage_latency.yml -e \"state=present\""
             }
         }
     ],
     "rollbacks": [
         {
             "type": "action",
-            "name": "remove-network-latency",
+            "name": "remove-network-latency-via-ansible",
             "provider": {
                 "type": "process",
-                "path": "ssh",
-                "args": "ssh -t ubuntu@52.221.214.225 sudo tc qdisc del dev eth0 root"
+                "path": "ansible-playbook",
+                "args": "-i inventory/ playbooks/chaos/manage_latency.yml -e \"state=absent\""
             }
         }
     ]

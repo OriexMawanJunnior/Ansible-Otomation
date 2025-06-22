@@ -1,0 +1,15 @@
+- name: Manage Network Latency on AWS Host
+  hosts: tag_Project_iac-thesis # Menargetkan hanya host AWS berdasarkan tag
+  become: yes # Menjalankan perintah sebagai root (sudo)
+
+  vars:
+    state: present # Nilai default: 'present' untuk menambah, 'absent' untuk menghapus
+
+  tasks:
+    - name: Add network latency using tc
+      ansible.builtin.shell: "tc qdisc add dev eth0 root netem delay 300ms"
+      when: state == 'present'
+
+    - name: Remove network latency using tc
+      ansible.builtin.shell: "tc qdisc del dev eth0 root"
+      when: state == 'absent'
