@@ -1,0 +1,12 @@
+- name: Configure Web Servers on All Instances
+  hosts: all
+  become: yes
+  gather_facts: yes
+  tasks:
+    - name: Wait for SSH to become available
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+
+    - name: Import Webserver Role
+      ansible.builtin.include_role:
+        name: webserver

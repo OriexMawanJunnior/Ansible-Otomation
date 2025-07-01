@@ -1,0 +1,15 @@
+- name: Provision Auto Healing Infrastructure (AWS & GCP)
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - vars/aws_secrets.yml
+    - vars/gcp_secrets.yml
+  tasks:
+    - name: Import AWS Provisioning Role
+      ansible.builtin.include_role:
+        name: aws_provision
+
+    - name: Import GCP Provisioning Role
+      ansible.builtin.include_role:
+        name: gcp_provision

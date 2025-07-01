@@ -1,0 +1,51 @@
+- name: Teardown All Auto Healing Infrastructure
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - vars/aws_secrets.yml
+    - vars/gcp_secrets.yml
+  tasks:
+    - name: AWS | Delete Auto Scaling Group
+      community.aws.ec2_asg:
+        name: "web-asg"
+        state: absent
+        region: ap-southeast-1 
+        force_delete: yes
+      ignore_errors: yes
+
+    - name: AWS | Delete Launch Template
+      amazon.aws.ec2_launch_template:
+        name: "web-server-template"
+        state: absent
+        region: ap-southeast-1 
+      ignore_errors: yes
+
+    - name: AWS | Delete Security Group
+      amazon.aws.ec2_security_group:
+        name: "web-sg"
+        state: absent
+        region: ap-southeast-1 
+      ignore_errors: yes
+
+    - name: GCP | Delete Managed Instance Group
+      google.cloud.gcp_compute_instance_group_manager:
+        name: "web-mig"
+        zone: "asia-southeast1-a" 
+        project: "eminent-kit-463510-a3" 
+        state: absent
+      ignore_errors: yes
+
+    - name: GCP | Delete Instance Template
+      google.cloud.gcp_compute_instance_template:
+        name: "web-server-template-gcp"
+        project: "eminent-kit-463510-a3"
+        state: absent
+      ignore_errors: yes
+
+    - name: GCP | Delete Firewall Rule
+      google.cloud.gcp_compute_firewall:
+        name: "allow-http-ssh"
+        project: "eminent-kit-463510-a3"
+        state: absent
+      ignore_errors: yes

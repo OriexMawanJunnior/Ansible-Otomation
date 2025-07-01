@@ -1,7 +1,0 @@
-# playbooks/configuration/configure_servers.yml
-- name: Configure web servers on all hosts
-  hosts: all
-  become: yes # Menjalankan tugas sebagai root (sudo)
-
-  roles:
-    - role: web_server

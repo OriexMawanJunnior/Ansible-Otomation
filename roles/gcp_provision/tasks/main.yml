@@ -1,0 +1,39 @@
+- name: Create GCP Firewall Rule
+  google.cloud.gcp_compute_firewall:
+    name: "allow-http-ssh"
+    project: "eminent-kit-463510-a3" 
+    allowed:
+      - ip_protocol: "tcp"
+        ports: ["80", "22"]
+    source_ranges: ["0.0.0.0/0"]
+    target_tags: ["webserver"]
+
+- name: Create GCP Instance Template
+  google.cloud.gcp_compute_instance_template:
+    name: "web-server-template-gcp"
+    project: "eminent-kit-463510-a3"
+    properties:
+      machine_type: "e2-micro"
+      disks:
+        - auto_delete: true
+          boot: true
+          initialize_params:
+            source_image: "projects/ubuntu-os-cloud/global/images/family/ubuntu-2204-lts"
+      network_interfaces:
+        - network: "global/networks/default"
+          access_configs:
+            - name: "External NAT"
+              type: "ONE_TO_ONE_NAT"
+      labels:
+        project: "multicloud-chaos-gcp"
+      tags:
+        items: ["webserver"]
+
+- name: Create GCP Managed Instance Group for Auto Healing
+  google.cloud.gcp_compute_instance_group_manager:
+    name: "web-mig"
+    zone: "asia-southeast1-a" 
+    project: "eminent-kit-463510-a3"
+    instance_template: "{{ 'global/instanceTemplates/web-server-template-gcp' }}"
+    base_instance_name: "gcp-web-instance"
+    target_size: 1

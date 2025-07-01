@@ -1,8 +1,7 @@
-# roles/web_server/tasks/main.yml
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: yes
-  changed_when: false # Agar tidak melaporkan 'changed' hanya karena update cache
+  changed_when: false 
 
 - name: Install Nginx
   ansible.builtin.apt:
@@ -21,3 +20,11 @@
     port: '80'
     proto: tcp
     comment: "Allow NGINX HTTP traffic"
+
+- name: Create custom index page with hostname
+  ansible.builtin.copy:
+    content: "<h1>Hello from {{ ansible_facts.hostname }} on {{ ansible_facts.distribution }}</h1>"
+    dest: /var/www/html/index.html
+    owner: www-data
+    group: www-data
+    mode: '0644'

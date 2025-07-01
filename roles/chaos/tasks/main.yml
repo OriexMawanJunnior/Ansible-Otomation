@@ -1,0 +1,45 @@
+- name: "EXPERIMENT 1: Auto Healing Test (GCP)"
+  block:
+    - name: "Get current GCP instance name"
+      ansible.builtin.set_fact:
+        gcp_instance_target: "{{ groups[gcp_instance_group][0] }}"
+
+    - name: "CHAOS INJECT: Terminate GCP Instance"
+      google.cloud.gcp_compute_instance:
+        name: "{{ gcp_instance_target }}"
+        project: "eminent-kit-463510-a3"
+        zone: "asia-southeast1-a" 
+        state: absent
+      delegate_to: localhost
+
+    - name: "VERIFICATION: Wait for MIG to heal (launch new instance)"
+      ansible.builtin.pause:
+        seconds: 180
+        prompt: "Instance terminated. Waiting 3 minutes for MIG to launch a replacement. Monitor GCP console."
+  always:
+    - name: Pause for 30 seconds before next experiment
+      ansible.builtin.pause:
+        seconds: 30
+
+- name: "EXPERIMENT 2: Network Latency (AWS)"
+  block:
+    - name: "Get current AWS instance"
+      ansible.builtin.set_fact:
+        aws_instance_target: "{{ groups[aws_instance_group][0] }}"
+
+    - name: "CHAOS INJECT: Inject 3s Latency on AWS Instance"
+      ansible.builtin.shell: "tc qdisc add dev eth0 root netem delay 3000ms"
+      delegate_to: "{{ aws_instance_target }}"
+      become: yes
+
+    - name: "Wait for 60 seconds for latency to be observed"
+      ansible.builtin.pause:
+        seconds: 60
+        prompt: "Latency injected on AWS. Check connectivity. Press Enter to cleanup."
+
+  always:
+    - name: "CHAOS CLEANUP: Remove Latency Rule from AWS Instance"
+      ansible.builtin.shell: "tc qdisc del dev eth0 root"
+      delegate_to: "{{ aws_instance_target }}"
+      become: yes
+      ignore_errors: yes

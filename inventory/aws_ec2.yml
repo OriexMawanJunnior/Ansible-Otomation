@@ -1,16 +1,12 @@
-# Mengambil inventory dari AWS EC2
-
 plugin: amazon.aws.aws_ec2
 regions:
-  - ap-southeast-1  # Sesuaikan dengan region Anda
+  - ap-southeast-1
+aws_access_key: "{{ lookup('vars', 'aws_access_key', vault_id='aws') }}"
+aws_secret_key: "{{ lookup('vars', 'aws_secret_key', vault_id='aws') }}"  
 keyed_groups:
-  # Membuat grup berdasarkan nilai dari tag 'Project'
-  # Contoh: jika ada VM dengan tag Project: iac-thesis, akan ada grup [iac-thesis]
   - key: tags.Project
     prefix: tag_Project_
 filters:
-  # Hanya mengambil instance yang sedang berjalan
   instance-state-name: running
 compose:
-  # Mengatur variabel ansible_host dengan alamat IP publik dari instance
   ansible_host: public_ip_address

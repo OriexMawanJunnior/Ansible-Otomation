@@ -1,18 +1,14 @@
-# Mengambil inventory dari Google Cloud Platform
-
 plugin: google.cloud.gcp_compute
-auth_kind: application
+auth_kind: serviceaccount
+service_account_file: "{{ lookup('vars', 'gcp_credentials_file', vault_id='gcp') }}"
 projects:
-  - eminent-kit-463510-a3 # Ganti dengan ID Project GCP Anda
+  - eminent-kit-463510-a3 
 zones:
-  - asia-southeast1-a # Sesuaikan dengan zona Anda
+  - asia-southeast1-a 
 keyed_groups:
-  # Membuat grup berdasarkan nilai dari label 'project'
   - key: labels.project
     prefix: label_project_
 filters:
-  # Hanya mengambil instance yang sedang berjalan
   - status = RUNNING
 compose:
-  # Mengatur variabel ansible_host dengan alamat IP publik (natIP)
   ansible_host: networkInterfaces[0].accessConfigs[0].natIP
