@@ -2,7 +2,7 @@ plugin: google.cloud.gcp_compute
 auth_kind: serviceaccount
 projects:
   - eminent-kit-463510-a3
-service_account_file: /root/Ansible-Otomation/gcp-credentials.json
+service_account_file: "{{ lookup('env', 'GCP_SA_FILE', default='') }}"
 hostnames:
   - name
 compose:

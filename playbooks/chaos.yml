@@ -1,13 +1,12 @@
-- name: Run Auto Healing Chaos Experiments
+- name: Run Auto Healing and Chaos Experiments
   hosts: localhost
   connection: local
   gather_facts: no
   vars_files:
-    - vars/aws_secrets.yml
-    - vars/gcp_secrets.yml
+    - ../vars/main.yml
   vars:
-    aws_instance_group: "Project_multicloud_chaos"
-    gcp_instance_group: "project_multicloud_chaos_gcp"
+    aws_instance_group: "{{ aws_project_tag }}_{{ aws_project_value }}"
+    gcp_instance_group: "{{ gcp_project_label }}_{{ gcp_project_value }}"
   tasks:
     - name: Run chaos experiments
       ansible.builtin.include_role:

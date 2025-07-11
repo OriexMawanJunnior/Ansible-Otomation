@@ -1,45 +1,77 @@
-- name: "EXPERIMENT 1: Auto Healing Test (GCP)"
+- name: "EXPERIMENT 1: Auto Healing Test (AWS)"
   block:
-    - name: "Get current GCP instance name"
-      ansible.builtin.set_fact:
-        gcp_instance_target: "{{ groups[gcp_instance_group][0] }}"
+    - name: "Get current AWS instance info"
+      amazon.aws.ec2_instance_info:
+        region: "{{ aws_region }}"
+        filters: 
+          "tag:{{ aws_project_tag }}": "{{ aws_project_value }}"
+          "instance-state-name": ["running"]
+      register: aws_instance_info_before
 
-    - name: "CHAOS INJECT: Terminate GCP Instance"
-      google.cloud.gcp_compute_instance:
-        name: "{{ gcp_instance_target }}"
-        project: "eminent-kit-463510-a3"
-        zone: "asia-southeast1-a" 
+    - name: "Set facts for instance to be terminated"
+      ansible.builtin.set_fact:
+        aws_instance_id_to_terminate: "{{ aws_instance_info_before.instances[0].instance_id }}"
+        aws_ip_to_terminate: "{{ aws_instance_info_before.instances[0].public_ip_address }}"
+
+    - name: "CHAOS INJECT: Terminate AWS Instance"
+      amazon.aws.ec2_instance:
+        instance_ids: [ "{{ aws_instance_id_to_terminate }}" ]
+        region: "{{ aws_region }}"
         state: absent
       delegate_to: localhost
-
-    - name: "VERIFICATION: Wait for MIG to heal (launch new instance)"
-      ansible.builtin.pause:
-        seconds: 180
-        prompt: "Instance terminated. Waiting 3 minutes for MIG to launch a replacement. Monitor GCP console."
-  always:
-    - name: Pause for 30 seconds before next experiment
-      ansible.builtin.pause:
-        seconds: 30
-
-- name: "EXPERIMENT 2: Network Latency (AWS)"
-  block:
-    - name: "Get current AWS instance"
+      
+    - name: "VERIFICATION: Wait for ASG to launch a new instance"
+      amazon.aws.ec2_instance_info:
+        region: "{{ aws_region }}"
+        filters:
+          "tag:{{ aws_project_tag }}": "{{ aws_project_value }}"
+          "instance-state-name": ["running", "pending"]
+      register: aws_instance_info_after
+      until: "aws_instance_info_after.instances | length > 0 and aws_instance_info_after.instances[0].instance_id != aws_instance_id_to_terminate"
+      retries: 15
+      delay: 10
+      
+    - name: "Set new instance IP fact"
       ansible.builtin.set_fact:
-        aws_instance_target: "{{ groups[aws_instance_group][0] }}"
+        new_aws_instance_ip: "{{ aws_instance_info_after.instances[0].public_ip_address }}"
 
-    - name: "CHAOS INJECT: Inject 3s Latency on AWS Instance"
-      ansible.builtin.shell: "tc qdisc add dev eth0 root netem delay 3000ms"
-      delegate_to: "{{ aws_instance_target }}"
+    - name: "VERIFICATION: Check if new web server is responding"
+      ansible.builtin.uri:
+        url: "http://{{ new_aws_instance_ip }}"
+        status_code: 200
+      register: web_check
+      until: web_check.status == 200
+      retries: 20
+      delay: 10
+      delegate_to: localhost
+      
+- name: "EXPERIMENT 2: Network Latency (GCP)"
+  block:
+    - name: "Get GCP instance and its default interface"
+      ansible.builtin.setup:
+        filter: ansible_default_ipv4
+      delegate_to: "{{ groups[gcp_instance_group][0] }}"
+      register: gcp_facts
+
+    - name: "Set target and interface facts"
+      ansible.builtin.set_fact:
+        gcp_instance_target: "{{ groups[gcp_instance_group][0] }}"
+        gcp_interface: "{{ gcp_facts.ansible_facts.ansible_default_ipv4.interface }}"
+
+    - name: "CHAOS INJECT: Inject 300ms Latency on GCP Instance"
+      ansible.builtin.shell: "tc qdisc add dev {{ gcp_interface }} root netem delay 300ms"
+      delegate_to: "{{ gcp_instance_target }}"
       become: yes
 
     - name: "Wait for 60 seconds for latency to be observed"
       ansible.builtin.pause:
         seconds: 60
-        prompt: "Latency injected on AWS. Check connectivity. Press Enter to cleanup."
+        prompt: "EXPERIMENT 2: 300ms latency injected on GCP ({{ gcp_interface }}). Monitor with 'ping {{ gcp_instance_target }}'. Press Enter to cleanup."
 
   always:
-    - name: "CHAOS CLEANUP: Remove Latency Rule from AWS Instance"
-      ansible.builtin.shell: "tc qdisc del dev eth0 root"
-      delegate_to: "{{ aws_instance_target }}"
+    - name: "CHAOS CLEANUP: Remove Latency Rule from GCP Instance"
+      ansible.builtin.shell: "tc qdisc del dev {{ gcp_interface }} root"
+      delegate_to: "{{ gcp_instance_target | default(omit) }}"
       become: yes
       ignore_errors: yes
+      when: gcp_instance_target is defined

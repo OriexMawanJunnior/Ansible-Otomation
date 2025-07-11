@@ -1,0 +1,30 @@
+---
+# ==================================
+# AWS Variables
+# ==================================
+aws_region: "ap-southeast-1"
+aws_az: "ap-southeast-1a"
+aws_instance_type: "t2.micro"
+aws_image_id: "ami-0b8607d2721c94a77" 
+aws_key_name: "ansible-key"
+aws_project_tag: "Project"
+aws_project_value: "multicloud-chaos"
+aws_instance_name_tag: "aws-web-instance"
+aws_sg_name: "web-sg"
+aws_lt_name: "web-server-template"
+aws_asg_name: "web-asg"
+
+# ==================================
+# GCP Variables
+# ==================================
+gcp_project_id: "eminent-kit-463510-a3"
+gcp_zone: "asia-southeast1-a"
+gcp_machine_type: "e2-micro"
+gcp_source_image: "projects/ubuntu-os-cloud/global/images/family/ubuntu-2204-lts"
+gcp_project_label: "project"
+gcp_project_value: "multicloud-chaos-gcp"
+gcp_instance_base_name: "gcp-web-instance"
+gcp_firewall_name: "allow-http-ssh"
+gcp_instance_template_name: "web-server-template-gcp"
+gcp_mig_name: "web-mig"
+gcp_network_tag: "webserver"

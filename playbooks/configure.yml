@@ -1,19 +1,25 @@
 - name: Configure Web Servers on All Instances
   hosts: all
   become: yes
-  gather_facts: yes
+  gather_facts: no
 
   pre_tasks:
-    - name: Set ansible_user for AWS EC2 instances
-      ansible.builtin.set_fact:
-        ansible_user: ubuntu
-      when: "'ec2' in inventory_hostname"
-
-  tasks:
     - name: Wait for SSH to become available
       ansible.builtin.wait_for_connection:
         timeout: 300
+    
+    - name: Accept new SSH host keys for security
+      ansible.builtin.known_hosts:
+        name: "{{ inventory_hostname }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan ' + inventory_hostname) }}"
+        state: present
+      delegate_to: localhost
+      become: no
 
+    - name: Gather facts after connection is established
+      ansible.builtin.setup:
+
+  tasks:
     - name: Import Webserver Role
       ansible.builtin.include_role:
         name: webserver

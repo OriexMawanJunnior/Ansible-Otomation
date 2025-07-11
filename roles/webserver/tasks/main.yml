@@ -15,10 +15,3 @@
     name: nginx
     state: started
     enabled: yes
-
-- name: Allow HTTP traffic on UFW firewall if UFW is active
-  community.general.ufw:
-    rule: allow
-    port: '80'
-    proto: tcp
-    comment: "Allow NGINX HTTP traffic"
