@@ -2,7 +2,7 @@
   amazon.aws.ec2_security_group:
     name: "web-sg"
     description: "Allow HTTP and SSH from Control Node"
-    region: ap-southeast-1 # <-- Ganti dengan region Anda
+    region: ap-southeast-1 
     rules:
       - proto: tcp
         from_port: 80
@@ -12,23 +12,25 @@
         from_port: 22
         to_port: 22
         cidr_ip: "152.42.169.182/32"
+  register: sg_result
 
 - name: Create AWS Launch Template
-  amazon.aws.ec_launch_template:
+  amazon.aws.ec2_launch_template:
     name: "web-server-template"
     region: "ap-southeast-1"
-    key_name: "ansible-key" 
-    instance_type: "t3.micro"
-    ami_id: "ami-0b8607d2721c94a77"
+    key_name: "ansible-key"
+    instance_type: "t2.micro"
+    image_id: "ami-0b8607d2721c94a77"
     network_interfaces:
       - associate_public_ip_address: yes
         groups:
-          - "web-sg"
+          - "{{ sg_result.group_id }}"
+        device_index: 0
     tag_specifications:
       - resource_type: instance
         tags:
           Project: "multicloud-chaos"
-          Name: "aws-web-instance" 
+          Name: "aws-web-instance"
 
 - name: Create AWS Auto Scaling Group for Auto Healing
   community.aws.ec2_asg:
@@ -39,6 +41,6 @@
     min_size: 1
     max_size: 1
     desired_capacity: 1
-    availability_zones: ["ap-southeast-1a"] 
+    availability_zones: ["ap-southeast-1a"]
     health_check_type: EC2
     health_check_period: 300

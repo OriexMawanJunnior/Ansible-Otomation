@@ -2,6 +2,13 @@
   hosts: all
   become: yes
   gather_facts: yes
+
+  pre_tasks:
+    - name: Set ansible_user for AWS EC2 instances
+      ansible.builtin.set_fact:
+        ansible_user: ubuntu
+      when: "'ec2' in inventory_hostname"
+
   tasks:
     - name: Wait for SSH to become available
       ansible.builtin.wait_for_connection:

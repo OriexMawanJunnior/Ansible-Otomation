@@ -2,50 +2,69 @@
   hosts: localhost
   connection: local
   gather_facts: no
-  vars_files:
-    - vars/aws_secrets.yml
-    - vars/gcp_secrets.yml
   tasks:
     - name: AWS | Delete Auto Scaling Group
       community.aws.ec2_asg:
         name: "web-asg"
         state: absent
-        region: ap-southeast-1 
-        force_delete: yes
+        region: ap-southeast-1
+        wait_for_instances: yes
       ignore_errors: yes
 
     - name: AWS | Delete Launch Template
       amazon.aws.ec2_launch_template:
         name: "web-server-template"
         state: absent
-        region: ap-southeast-1 
+        region: ap-southeast-1
       ignore_errors: yes
 
     - name: AWS | Delete Security Group
       amazon.aws.ec2_security_group:
         name: "web-sg"
         state: absent
-        region: ap-southeast-1 
+        region: ap-southeast-1
       ignore_errors: yes
 
+    - name: GCP | Scale Down Managed Instance Group
+      command: >
+        gcloud compute instance-groups managed resize web-mig
+        --size=0
+        --zone=asia-southeast1-a
+        --project=eminent-kit-463510-a3
+        --quiet
+      ignore_errors: yes
+
+    - name: GCP | Wait for instances to be terminated
+      pause:
+        seconds: 45
+
     - name: GCP | Delete Managed Instance Group
-      google.cloud.gcp_compute_instance_group_manager:
-        name: "web-mig"
-        zone: "asia-southeast1-a" 
-        project: "eminent-kit-463510-a3" 
-        state: absent
+      command: >
+        gcloud compute instance-groups managed delete web-mig
+        --zone=asia-southeast1-a
+        --project=eminent-kit-463510-a3
+        --quiet
       ignore_errors: yes
 
     - name: GCP | Delete Instance Template
-      google.cloud.gcp_compute_instance_template:
-        name: "web-server-template-gcp"
-        project: "eminent-kit-463510-a3"
-        state: absent
+      command: >
+        gcloud compute instance-templates delete web-server-template-gcp
+        --project=eminent-kit-463510-a3
+        --quiet
+      ignore_errors: yes
+
+    - name: GCP | Check if Firewall Rule exists
+      command: >
+        gcloud compute firewall-rules describe allow-http-ssh
+        --project=eminent-kit-463510-a3
+        --format="value(name)"
+      register: firewall_check
       ignore_errors: yes
 
     - name: GCP | Delete Firewall Rule
-      google.cloud.gcp_compute_firewall:
-        name: "allow-http-ssh"
-        project: "eminent-kit-463510-a3"
-        state: absent
+      command: >
+        gcloud compute firewall-rules delete allow-http-ssh
+        --project=eminent-kit-463510-a3
+        --quiet
+      when: firewall_check.rc == 0
       ignore_errors: yes

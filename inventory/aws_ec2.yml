@@ -1,12 +1,8 @@
 plugin: amazon.aws.aws_ec2
 regions:
   - ap-southeast-1
-aws_access_key: "{{ lookup('vars', 'aws_access_key', vault_id='aws') }}"
-aws_secret_key: "{{ lookup('vars', 'aws_secret_key', vault_id='aws') }}"  
 keyed_groups:
   - key: tags.Project
-    prefix: tag_Project_
-filters:
-  instance-state-name: running
+    prefix: Project
 compose:
-  ansible_host: public_ip_address
+  ansible_user: "'ubuntu'"

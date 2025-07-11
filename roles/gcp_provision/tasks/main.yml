@@ -1,39 +1,55 @@
-- name: Create GCP Firewall Rule
-  google.cloud.gcp_compute_firewall:
-    name: "allow-http-ssh"
-    project: "eminent-kit-463510-a3" 
-    allowed:
-      - ip_protocol: "tcp"
-        ports: ["80", "22"]
-    source_ranges: ["0.0.0.0/0"]
-    target_tags: ["webserver"]
+- name: "EXPERIMENT 1: Auto Healing Test (AWS)"
+  block:
+    - name: "Get current AWS instance info"
+      amazon.aws.ec2_instance_info:
+        region: ap-southeast-1
+        filters: { "tag:Project": "multicloud-chaos", "instance-state-name": ["running"] }
+      register: aws_instance_info
+    - name: "Set target instance for termination"
+      ansible.builtin.set_fact:
+        aws_instance_id_to_terminate: "{{ aws_instance_info.instances[0].instance_id }}"
+        aws_hostname_to_terminate: "{{ aws_instance_info.instances[0].public_dns_name }}"
+    - name: "CHAOS INJECT: Terminate AWS Instance by ID"
+      amazon.aws.ec2_instance:
+        instance_ids: [ "{{ aws_instance_id_to_terminate }}" ]
+        region: ap-southeast-1
+        state: absent
+        wait: no
+      delegate_to: localhost
+    - name: "VERIFICATION: Wait for ASG to heal"
+      ansible.builtin.pause:
+        seconds: 180
+        prompt: "EXPERIMENT 1: AWS Instance ({{ aws_hostname_to_terminate }}) terminated. Monitor measure-mttr-aws.sh. Press Enter to continue."
+  always:
+    - name: Pause for 30 seconds
+      ansible.builtin.pause:
+        seconds: 30
 
-- name: Create GCP Instance Template
-  google.cloud.gcp_compute_instance_template:
-    name: "web-server-template-gcp"
-    project: "eminent-kit-463510-a3"
-    properties:
-      machine_type: "e2-micro"
-      disks:
-        - auto_delete: true
-          boot: true
-          initialize_params:
-            source_image: "projects/ubuntu-os-cloud/global/images/family/ubuntu-2204-lts"
-      network_interfaces:
-        - network: "global/networks/default"
-          access_configs:
-            - name: "External NAT"
-              type: "ONE_TO_ONE_NAT"
-      labels:
-        project: "multicloud-chaos-gcp"
-      tags:
-        items: ["webserver"]
+- name: "EXPERIMENT 2: Network Latency (GCP)"
+  block:
+    - name: "Get current GCP instance name"
+      ansible.builtin.set_fact:
+        gcp_instance_target: "{{ groups.project_multicloud_chaos_gcp[0] }}"
 
-- name: Create GCP Managed Instance Group for Auto Healing
-  google.cloud.gcp_compute_instance_group_manager:
-    name: "web-mig"
-    zone: "asia-southeast1-a" 
-    project: "eminent-kit-463510-a3"
-    instance_template: "{{ 'global/instanceTemplates/web-server-template-gcp' }}"
-    base_instance_name: "gcp-web-instance"
-    target_size: 1
+    - name: "Get default network interface"
+      ansible.builtin.shell: "ip route | grep default | awk '{print $5}' | head -1"
+      delegate_to: "{{ gcp_instance_target }}"
+      register: default_interface
+      become: yes
+
+    - name: "CHAOS INJECT: Inject 300ms Latency on GCP Instance"
+      ansible.builtin.shell: "tc qdisc add dev {{ default_interface.stdout.strip() }} root netem delay 300ms"
+      delegate_to: "{{ gcp_instance_target }}"
+      become: yes
+
+    - name: "Wait for 60 seconds for latency to be observed"
+      ansible.builtin.pause:
+        seconds: 60
+        prompt: "EXPERIMENT 2: 300ms latency injected on GCP ({{ default_interface.stdout.strip() }}). Monitor health_check.sh. Press Enter to cleanup."
+
+  always:
+    - name: "CHAOS CLEANUP: Remove Latency Rule from GCP Instance"
+      ansible.builtin.shell: "tc qdisc del dev {{ default_interface.stdout.strip() }} root"
+      delegate_to: "{{ gcp_instance_target }}"
+      become: yes
+      ignore_errors: yes

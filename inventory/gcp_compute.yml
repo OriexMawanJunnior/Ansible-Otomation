@@ -1,14 +1,12 @@
 plugin: google.cloud.gcp_compute
 auth_kind: serviceaccount
-service_account_file: "{{ lookup('vars', 'gcp_credentials_file', vault_id='gcp') }}"
 projects:
-  - eminent-kit-463510-a3 
-zones:
-  - asia-southeast1-a 
-keyed_groups:
-  - key: labels.project
-    prefix: label_project_
-filters:
-  - status = RUNNING
+  - eminent-kit-463510-a3
+service_account_file: /root/Ansible-Otomation/gcp-credentials.json
+hostnames:
+  - name
 compose:
   ansible_host: networkInterfaces[0].accessConfigs[0].natIP
+keyed_groups:
+  - key: labels.project
+    prefix: project
